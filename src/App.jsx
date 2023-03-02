@@ -32,7 +32,19 @@ const App = () => {
     <>
       <Toaster />
       <Formik
-        initialValues={{}}
+
+        //campos del formulario
+        initialValues={{
+          name: '',
+          release_date: '',
+          author_id: '',
+          details: '',
+          editorial: '',
+          price: '',
+          language: '',
+        }}
+
+        //cuando se envia el formulario se de nuevo una peticion a la api
         onSubmit={async (values, { setSubmitting }) => {
           console.table([values]);
 
@@ -56,6 +68,7 @@ const App = () => {
             });
         }}
       >
+      {/* se cierra la etiqueta formik */}
         {({
           values,
           errors,
@@ -65,6 +78,8 @@ const App = () => {
           handleSubmit,
           isSubmitting,
         }) => (
+
+          //formulario
           <form onSubmit={handleSubmit} autoComplete='off'>
             <label>Nombre del Libro</label>
             <Input placeholder="Nombre de libro..." name='name' /> <br />
