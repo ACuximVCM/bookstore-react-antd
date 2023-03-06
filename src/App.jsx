@@ -1,16 +1,31 @@
-import { Button, DatePicker, Input, InputNumber, Select } from 'antd';
+import { Button, Col, DatePicker, Input, InputNumber, Row, Select } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
-import { Formik } from 'formik';
 import { useEffect, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import './App.css'
+import * as Yup from 'yup';
+import { Field, Form, Formik } from 'formik';
+import { AntInput } from './components/AntInput';
+import { AntSelect } from './components/AntSelect';
+import { AntDatePicker } from './components/AntDatePicker';
+import moment from 'moment';
+import { AntTextarea } from './components/AntTextarea';
+
+const validationSchema = Yup.object().shape({
+  name: Yup.string().required('Requerido'),
+  author_id: Yup.string().required('Requerido'),
+  release_date: Yup.string().required('Requerido'),
+  details: Yup.string().required('Requerido'),
+  price: Yup.string().required('Requerido'),
+  language: Yup.string().required('Requerido'),
+});
 
 const App = () => {
   const [authorsList, setAuthorsList] = useState([]);
   const [booksList, setBooksList] = useState([]);
 
   const obtainAuthorsList = async () => {
-    const res = await fetch('http://127.0.0.1:8000/api/authors_list')
+    const res = await fetch('http://127.0.0.1:8000/api/authors-list')
       .then(res => res.json());
 
     setAuthorsList(res);
@@ -32,85 +47,127 @@ const App = () => {
     <>
       <Toaster />
       <Formik
-        initialValues={{}}
-        onSubmit={async (values, { setSubmitting }) => {
-          console.table([values]);
-
-          const post = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(values)
-          };
-
-          await fetch('http://127.0.0.1:8000/api/books', post)
-            .then(res => {
-              obtainBooksList();
-              if (res.status >= 200 && res.status <= 200) {
-                toast.success("LIBRO INSERTADO CORRECTAMENTE");
-              } else {
-                toast.error('ha ocurrido un error');
-              }
-            })
-            .catch(err => {
-              toast.error('ha ocurrido un error');
-            });
+      enableReinitialize
+      initialValues={{}}
+        validationSchema={validationSchema}
+        onSubmit={async (values, { setSubmitting, setErrors }) => {
+          console.log(values);
         }}
       >
         {({
           values,
-          errors,
-          touched,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          isSubmitting,
+          submitCount
+          /* and other goodies */
         }) => (
-          <form onSubmit={handleSubmit} autoComplete='off'>
-            <label>Nombre del Libro</label>
-            <Input placeholder="Nombre de libro..." name='name' /> <br />
-            <label>Fecha de lanzamiento</label>
-            <DatePicker style={{ width: '100%' }} name='release_date' placeholder='Elige una fecha' /> <br />
-            <label htmlFor="">Autor</label>
-            <Select
-              name="author_id"
-              id="author"
-              style={{ width: '100%' }}
-              showSearch
-              optionFilterProp='label'
-            >
-              {
-                authorsList.map((item, index) => {
-                  return <Select.Option
-                    key={item.id}
-                    value={item.id}
-                    label={item.first_name + ' ' + item.last_name}
-                  >
-                    {item.first_name} {item.last_name}
-                  </Select.Option>
-                })
-              }
-            </Select>
-            <br />
-            <label>Detalles</label>
-            <TextArea name="details" cols="30" rows="10" />
-            <br />
-            <label>Editorial</label>
-            <Input placeholder="Nombre de editorial..." name='editorial' />
-            <br />
-            <label>Precio</label>
-            <InputNumber style={{ width: '100%' }} name='price' /> <br />
-            <br />
-            <label>Lenguaje</label>
-            <Input name='language' type="text" /><br />
-            <br />
-            <Button htmlType='submit'>Enviar</Button>
+          <Form>
+            <Row>
+              <Col xs={12}>
+                <Field
+                  style={{ width: '100%' }}
+                  component={AntInput}
+                  type="text"
+                  name="name"
+                  id="name"
+                  label="Nombre"
+                  placeholder="Nombre"
+                  onChange={(e) => { console.log(e.target.value) }}
+                  min="5"
+                />
+              </Col>
+            </Row>
 
-            <hr />
-            <p>{JSON.stringify(errors)}</p>
-          </form>
+            <Row>
+              <Col xs={12}>
+                <Field
+                  style={{ width: '100%' }}
+                  type="text"
+                  label="Autor"
+                  name="author_id"
+                  id="author_id"
+                  placeholder="Nombre del autor"
+                  onChange={(e) => { console.log(e) }}
+                  min="5"
+                  component={AntSelect}
+                  options={authorsList}
+                />
+              </Col>
+            </Row>
 
+            <Row>
+              <Col xs={12}>
+                <Field
+                  style={{ width: '100%' }}
+                  name="release_date"
+                  id="release_date"
+                  label="Fecha de lanzamiento"
+                  placeholder="Selecciona una fecha"
+                  onChange={(e) => { console.log(e) }}
+                  component={AntDatePicker}
+                />
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={12}>
+                <Field
+                  style={{ width: '100%' }}
+                  name="details"
+                  id="details"
+                  label="Detalles"
+                  placeholder="Detalles del libro"
+                  onChange={(e) => { console.log(e.target.value) }}
+                  component={AntTextarea}
+                />
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={12}>
+                <Field
+                  style={{ width: '100%' }}
+                  component={AntInput}
+                  type="text"
+                  name="price"
+                  id="price"
+                  label="Precio"
+                  placeholder="Precio"
+                  onChange={(e) => { console.log(e.target.value) }}
+                />
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={12}>
+                <Field
+                  style={{ width: '100%' }}
+                  type="text"
+                  label="Idioma"
+                  name="language"
+                  id="language"
+                  placeholder="Idioma"
+                  onChange={(e) => { console.log(e) }}
+                  min="5"
+                  component={AntSelect}
+                  options={[{
+                    value: 'Es', 'label': 'Español',
+                  }, {
+                    value: 'En', 'label': 'Inglés'
+                  }]}
+                />
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={12}>
+                <Button htmlType='submit' type='primary'>
+                  Enviar
+                </Button>
+              </Col>
+            </Row>
+          </Form>
         )}
       </Formik>
+
 
       <hr />
       <hr />
