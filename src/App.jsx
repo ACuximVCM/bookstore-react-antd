@@ -1,28 +1,64 @@
-import { Button, Col, DatePicker, Input, InputNumber, Row, Select } from 'antd';
+import { Button, Col, DatePicker, Input, InputNumber, Row, Select, Table } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import { useEffect, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import './App.css'
-import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import { AntInput } from './components/AntInput';
 import { AntSelect } from './components/AntSelect';
 import { AntDatePicker } from './components/AntDatePicker';
 import moment from 'moment';
 import { AntTextarea } from './components/AntTextarea';
-
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required('Requerido'),
-  author_id: Yup.string().required('Requerido'),
-  release_date: Yup.string().required('Requerido'),
-  details: Yup.string().required('Requerido'),
-  price: Yup.string().required('Requerido'),
-  language: Yup.string().required('Requerido'),
-});
+import ValidationSchema from './schema/ValidationSchema';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 const App = () => {
   const [authorsList, setAuthorsList] = useState([]);
   const [booksList, setBooksList] = useState([]);
+  const ColumnsForm = [
+    {
+      title: "Nombre",
+      dataIndex: "name",
+      key: (item) => `name_${item.original.id}`,
+    },
+    {
+      title: "Autor",
+      dataIndex: "author",
+      key: (item) => `author_${item.original.id}`,
+      render: (item) => <b> {item.full_name} </b>
+    },
+    {
+      title: "Fecha de lanzamiento",
+      dataIndex: "release_date",
+      key: (item) => `release_date_${item.original.id}`,
+    },
+    {
+      title: "Detalles",
+      dataIndex: "details",
+      key: (item) => `details_${item.original.id}`,
+    },
+    {
+      title: "Editorial",
+      dataIndex: "editorial",
+      key: (item) => `editorial_${item.original.id}`,
+    },
+    {
+      title: "Precio",
+      dataIndex: "price",
+      key: (item) => `price_${item.original.id}`,
+    },
+    {
+      title: "Acciones",
+      dataIndex: "id",
+      key: (item) => `actions_${item.original.id}`,
+      render: (item) => {
+        return <>
+          <EditOutlined style={{ marginRight: '10px' }} onClick={() => { console.log(item) }} />
+          <DeleteOutlined style={{ color: 'red' }} onClick={() => { { removeBook(item) } }} />
+        </>
+      }
+    },
+  ]
 
   const obtainAuthorsList = async () => {
     const res = await fetch('http://127.0.0.1:8000/api/authors-list')
@@ -38,6 +74,21 @@ const App = () => {
     setBooksList(response);
   };
 
+  const removeBook = async (item) => {
+    const deleteBook = {
+      method: 'DELETE',
+    };
+
+    await fetch(`http://127.0.0.1:8000/api/book/${item}`, deleteBook)
+      .then(res => {
+        console.log(res);
+        obtainBooksList();
+      })
+      .catch(err => console.log(err))
+
+
+  }
+
   useEffect(() => {
     obtainAuthorsList();
     obtainBooksList();
@@ -47,20 +98,52 @@ const App = () => {
     <>
       <Toaster />
       <Formik
-      enableReinitialize
-      initialValues={{}}
-        validationSchema={validationSchema}
-        onSubmit={async (values, { setSubmitting, setErrors }) => {
-          console.log(values);
+        initialValues={{}}
+        style={{ width: '100%' }}
+
+        //validacion con Yup
+        validationSchema={ValidationSchema}
+
+        onSubmit={async (values, { resetForm }) => {
+          let payload = {
+            ...values,
+            release_date: values.release_date.format('YYYY-MM-DD')
+          }
+
+          const post = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          };
+
+          await fetch('http://127.0.0.1:8000/api/books', post)
+            .then(res => {
+              obtainBooksList();
+              if (res.status >= 200 && res.status <= 200) {
+                toast.success("Libro insertado correctamente");
+              } else {
+                toast.error('Ha ocurrido un error');
+              }
+            })
+            .catch(err => {
+              toast.error('Ha ocurrido un error');
+            });
+
+          resetForm();
         }}
       >
         {({
           values,
-          submitCount
+          submitCount,
+          handleSubmit,
+          setFieldValue,
+          handleChange,
+          handleBlur,
           /* and other goodies */
         }) => (
-          <Form>
-            <Row>
+          <Form onSubmit={handleSubmit}>
+            {/* Nombre del libro */}
+            <Row gutter={16}>
               <Col xs={12}>
                 <Field
                   style={{ width: '100%' }}
@@ -70,12 +153,14 @@ const App = () => {
                   id="name"
                   label="Nombre"
                   placeholder="Nombre"
-                  onChange={(e) => { console.log(e.target.value) }}
+                  onChange={handleChange}
+                  value={values.name}
                   min="5"
                 />
               </Col>
             </Row>
 
+            {/* Nombre del autor */}
             <Row>
               <Col xs={12}>
                 <Field
@@ -85,7 +170,7 @@ const App = () => {
                   name="author_id"
                   id="author_id"
                   placeholder="Nombre del autor"
-                  onChange={(e) => { console.log(e) }}
+                  onChange={(value) => setFieldValue('author_id', value)}
                   min="5"
                   component={AntSelect}
                   options={authorsList}
@@ -93,6 +178,7 @@ const App = () => {
               </Col>
             </Row>
 
+            {/* Fecha de lanzamiento */}
             <Row>
               <Col xs={12}>
                 <Field
@@ -101,12 +187,13 @@ const App = () => {
                   id="release_date"
                   label="Fecha de lanzamiento"
                   placeholder="Selecciona una fecha"
-                  onChange={(e) => { console.log(e) }}
+                  onChange={(value) => setFieldValue("release_date", value)} min="5"
                   component={AntDatePicker}
                 />
               </Col>
             </Row>
 
+            {/* Detalles */}
             <Row>
               <Col xs={12}>
                 <Field
@@ -115,12 +202,28 @@ const App = () => {
                   id="details"
                   label="Detalles"
                   placeholder="Detalles del libro"
-                  onChange={(e) => { console.log(e.target.value) }}
+                  onChange={handleChange}
                   component={AntTextarea}
                 />
               </Col>
             </Row>
 
+            {/* Editorial */}
+            <Row>
+              <Col xs={12}>
+                <Field
+                  style={{ width: '100%' }}
+                  name="editorial"
+                  id="editorial"
+                  label="Editorial"
+                  placeholder="Editorial del libro"
+                  onChange={handleChange}
+                  component={AntInput}
+                />
+              </Col>
+            </Row>
+
+            {/* Precio */}
             <Row>
               <Col xs={12}>
                 <Field
@@ -131,11 +234,12 @@ const App = () => {
                   id="price"
                   label="Precio"
                   placeholder="Precio"
-                  onChange={(e) => { console.log(e.target.value) }}
+                  onChange={handleChange}
                 />
               </Col>
             </Row>
 
+            {/* Idioma */}
             <Row>
               <Col xs={12}>
                 <Field
@@ -145,7 +249,7 @@ const App = () => {
                   name="language"
                   id="language"
                   placeholder="Idioma"
-                  onChange={(e) => { console.log(e) }}
+                  onChange={(value) => setFieldValue("language", value)}
                   min="5"
                   component={AntSelect}
                   options={[{
@@ -168,43 +272,14 @@ const App = () => {
         )}
       </Formik>
 
-
       <hr />
-      <hr />
-      <table>
-        <thead>
-          <tr>
-            <td>Titulo</td>
-            <td>Autor</td>
-            <td>Fecha de lanzamiento</td>
-            <td>Detalles</td>
-            <td>Editorial</td>
-            <td>Precio</td>
-            <td>Lenguaje</td>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            booksList.length > 0 && booksList.map((item, index) => {
-              return <tr key={item.id}>
-                <td>{item?.name}</td>
-                <td>
-                  {item?.author.first_name} {item.author.last_name}
-                </td>
-                <td>{item?.release_date}</td>
-                <td>{item?.details}</td>
-                <td>{item?.editorial}</td>
-                <td>{item?.price}</td>
-                <td>{item?.language}</td>
-              </tr>
-            })
-          }
-        </tbody>
-      </table>
 
-
+      <Table
+        columns={ColumnsForm}
+        dataSource={booksList} />
     </>
   )
 }
 
-export default App
+export default App;
+

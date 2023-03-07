@@ -13,6 +13,13 @@ export const AntSelect = (props) => {
                 allowClear
                 showSearch
             />
+                {/* {props.options.map((item, index) => {
+                    return <Select.Option value={item.value} key={item.value}>
+                        {item.label}
+                    </Select.Option>
+                })}
+
+            </Select> */}
         </>
     )
 }
