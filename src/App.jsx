@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Row, Table } from 'antd';
+import { Button, Col, Divider, Popconfirm, Row, Table } from 'antd';
 import { useEffect, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import './App.css'
@@ -9,6 +9,7 @@ import { AntDatePicker } from './components/antd/AntDatePicker';
 import { AntTextarea } from './components/antd/AntTextarea';
 import ValidationSchema from './schema/ValidationSchema';
 import { DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 const App = () => {
   const [authorsList, setAuthorsList] = useState([]);
@@ -29,7 +30,7 @@ const App = () => {
       title: "Fecha de lanzamiento",
       dataIndex: "release_date",
       key: (item) => `release_date_${item.original.id}`,
-      responsive:['lg'] 
+      responsive: ['lg']
     },
     {
       title: "Detalles",
@@ -55,39 +56,49 @@ const App = () => {
       render: (item) => {
         return <>
           <EditOutlined style={{ marginRight: '10px' }} onClick={() => { console.log(item) }} />
-          <DeleteOutlined style={{ color: 'red' }} onClick={() => { { removeBook(item) } }} />
+          <Popconfirm
+            title="¿Desea eliminar el registro?"
+            onConfirm={() => { { removeBook(item) } }}
+          >
+            <Button type='large'>
+              <DeleteOutlined style={{ color: 'red' }} />
+            </Button>
+          </Popconfirm>
         </>
       }
     },
   ]
 
-  const obtainAuthorsList = async () => {
-    const res = await fetch('http://127.0.0.1:8000/api/authors-list')
-      .then(res => res.json());
-
-    setAuthorsList(res);
-  };
-
+  // Request para obtener los libros
   const obtainBooksList = async () => {
-    let response = await fetch('http://127.0.0.1:8000/api/book')
-      .then(res => res.json());
+    const response = await axios.get('http://127.0.0.1:8000/api/book')
+      .then(res => res)
+      .catch(err => { console.log(err) })
 
-    setBooksList(response);
+    if (response.data) {
+      setBooksList(response.data);
+    }
   };
 
-  const removeBook = async (item) => {
-    const deleteBook = {
-      method: 'DELETE',
-    };
+  //Request para obtener los autores
+  const obtainAuthorsList = async () => {
+    const res = await axios.get('http://127.0.0.1:8000/api/authors-list')
+      .then(res => res)
+      .catch(err => console.log(err));
 
-    await fetch(`http://127.0.0.1:8000/api/book/${item}`, deleteBook)
+    if (res.data) {
+      setAuthorsList(res.data);
+    }
+  };
+
+  //Request para eliminar un libro
+  const removeBook = async (item) => {
+    await axios.delete(`http://127.0.0.1:8000/api/book/${item}`)
       .then(res => {
-        console.log(res);
         obtainBooksList();
+        toast.success('El registro se eliminó correctamente');
       })
       .catch(err => console.log(err))
-
-
   }
 
   useEffect(() => {
@@ -104,45 +115,33 @@ const App = () => {
 
         //validacion con Yup
         validationSchema={ValidationSchema}
-
         onSubmit={async (values, { resetForm }) => {
+          console.log(values);
           let payload = {
             ...values,
             release_date: values.release_date.format('YYYY-MM-DD')
           }
 
-          const post = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          };
+          let response = await axios.post('http://127.0.0.1:8000/api/books', payload)
+            .then(res => res)
+            .catch(err => { console.log(err) });
 
-          await fetch('http://127.0.0.1:8000/api/books', post)
-            .then(res => {
-              obtainBooksList();
-              if (res.status >= 200 && res.status <= 200) {
-                toast.success("Libro insertado correctamente");
-              } else {
-                toast.error('Ha ocurrido un error');
-              }
-            })
-            .catch(err => {
-              toast.error('Ha ocurrido un error');
-            });
-
-          resetForm();
+          if (response.data) {
+            resetForm();
+            obtainBooksList();
+            toast.success("Libro insertado correctamente");
+          } else {
+            toast.error('Ha ocurrido un error');
+          }
         }}
       >
         {({
           values,
-          submitCount,
-          handleSubmit,
           setFieldValue,
           handleChange,
-          handleBlur,
           /* and other goodies */
         }) => (
-          <Form onSubmit={handleSubmit} autoComplete='off'>
+          <Form autoComplete='off'>
             {/* Nombre del libro */}
             <Row gutter={24}>
               <Col xs={24} md={24}>
@@ -262,7 +261,7 @@ const App = () => {
               </Col>
             </Row>
 
-            <Row gutter={24} type="flex" style={{ marginTop: '10px'}} justify="end">
+            <Row gutter={24} type="flex" style={{ marginTop: '10px' }} justify="end">
               <Col>
                 <Button htmlType='submit' type='primary' size='large'>
                   <SaveOutlined /> Enviar
@@ -276,7 +275,7 @@ const App = () => {
       <Divider>Lista de libros</Divider>
 
       <Table
-        pagination={{position: ['bottomCenter']}}
+        pagination={{ position: ['bottomCenter'] }}
         columns={ColumnsForm}
         dataSource={booksList} />
     </>
