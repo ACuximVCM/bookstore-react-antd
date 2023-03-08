@@ -1,16 +1,14 @@
-import { Button, Col, DatePicker, Input, InputNumber, Row, Select, Table } from 'antd';
-import TextArea from 'antd/es/input/TextArea';
+import { Button, Col, Row, Table } from 'antd';
 import { useEffect, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import './App.css'
 import { Field, Form, Formik } from 'formik';
-import { AntInput } from './components/AntInput';
-import { AntSelect } from './components/AntSelect';
-import { AntDatePicker } from './components/AntDatePicker';
-import moment from 'moment';
-import { AntTextarea } from './components/AntTextarea';
+import { AntInput } from './components/antd/AntInput';
+import { AntSelect } from './components/antd/AntSelect';
+import { AntDatePicker } from './components/antd/AntDatePicker';
+import { AntTextarea } from './components/antd/AntTextarea';
 import ValidationSchema from './schema/ValidationSchema';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 
 const App = () => {
   const [authorsList, setAuthorsList] = useState([]);
@@ -141,10 +139,10 @@ const App = () => {
           handleBlur,
           /* and other goodies */
         }) => (
-          <Form onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit} autoComplete='off'>
             {/* Nombre del libro */}
-            <Row gutter={16}>
-              <Col xs={12}>
+            <Row gutter={24}>
+              <Col xs={24} md={24}>
                 <Field
                   style={{ width: '100%' }}
                   component={AntInput}
@@ -161,8 +159,8 @@ const App = () => {
             </Row>
 
             {/* Nombre del autor */}
-            <Row>
-              <Col xs={12}>
+            <Row gutter={24}>
+              <Col xs={24}>
                 <Field
                   style={{ width: '100%' }}
                   type="text"
@@ -179,8 +177,8 @@ const App = () => {
             </Row>
 
             {/* Fecha de lanzamiento */}
-            <Row>
-              <Col xs={12}>
+            <Row gutter={24}>
+              <Col xs={24}>
                 <Field
                   style={{ width: '100%' }}
                   name="release_date"
@@ -194,8 +192,8 @@ const App = () => {
             </Row>
 
             {/* Detalles */}
-            <Row>
-              <Col xs={12}>
+            <Row gutter={24}>
+              <Col xs={24}>
                 <Field
                   style={{ width: '100%' }}
                   name="details"
@@ -209,8 +207,8 @@ const App = () => {
             </Row>
 
             {/* Editorial */}
-            <Row>
-              <Col xs={12}>
+            <Row gutter={24}>
+              <Col xs={24}>
                 <Field
                   style={{ width: '100%' }}
                   name="editorial"
@@ -224,8 +222,8 @@ const App = () => {
             </Row>
 
             {/* Precio */}
-            <Row>
-              <Col xs={12}>
+            <Row gutter={24}>
+              <Col xs={24}>
                 <Field
                   style={{ width: '100%' }}
                   component={AntInput}
@@ -240,8 +238,8 @@ const App = () => {
             </Row>
 
             {/* Idioma */}
-            <Row>
-              <Col xs={12}>
+            <Row gutter={24}>
+              <Col xs={24}>
                 <Field
                   style={{ width: '100%' }}
                   type="text"
@@ -261,10 +259,10 @@ const App = () => {
               </Col>
             </Row>
 
-            <Row>
-              <Col xs={12}>
-                <Button htmlType='submit' type='primary'>
-                  Enviar
+            <Row gutter={24} type="flex" style={{ marginTop: '10px'}} justify="end">
+              <Col>
+                <Button htmlType='submit' type='primary' size='large'>
+                  <SaveOutlined /> Enviar
                 </Button>
               </Col>
             </Row>
