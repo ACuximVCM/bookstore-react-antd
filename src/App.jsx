@@ -1,4 +1,4 @@
-import { Button, Col, Row, Table } from 'antd';
+import { Button, Col, Divider, Row, Table } from 'antd';
 import { useEffect, useState } from 'react'
 import { toast, Toaster } from 'react-hot-toast';
 import './App.css'
@@ -29,16 +29,19 @@ const App = () => {
       title: "Fecha de lanzamiento",
       dataIndex: "release_date",
       key: (item) => `release_date_${item.original.id}`,
+      responsive:['lg'] 
     },
     {
       title: "Detalles",
       dataIndex: "details",
       key: (item) => `details_${item.original.id}`,
+      responsive: ['md'],
     },
     {
       title: "Editorial",
       dataIndex: "editorial",
       key: (item) => `editorial_${item.original.id}`,
+      responsive: ['lg']
     },
     {
       title: "Precio",
@@ -270,9 +273,10 @@ const App = () => {
         )}
       </Formik>
 
-      <hr />
+      <Divider>Lista de libros</Divider>
 
       <Table
+        pagination={{position: ['bottomCenter']}}
         columns={ColumnsForm}
         dataSource={booksList} />
     </>
