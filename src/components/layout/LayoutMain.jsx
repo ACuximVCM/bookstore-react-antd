@@ -1,12 +1,16 @@
 import { ReadOutlined, UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Divider, Layout, Menu, theme } from 'antd';
+import { Divider, Form, Layout, Menu, theme } from 'antd';
 import React from 'react';
-import App from '../App';
+import FormBook from '../../FormBook';
+import { FormAuthor } from '../form/FormAuthor';
+import Navbar from './Navbar';
 const { Header, Content, Footer, Sider } = Layout;
 const LayoutMain = () => {
     const {
         token: { colorBgContainer },
     } = theme.useToken();
+
+    
     return (
         <Layout>
             <Sider
@@ -22,18 +26,35 @@ const LayoutMain = () => {
                 }}
             >
                 <div className="logo" />
+                <Navbar />
                 {/* Menu de navegacion */}
                 <Menu
                     theme="dark"
                     mode="inline"
                     defaultSelectedKeys={['1']}
-                      items={[ReadOutlined, UserOutlined].map(
-                        (icon, index) => ({
-                          key: String(index + 1),
-                          icon: React.createElement(icon),
-                          label: ` ${index + 1}`,
-                        }),
-                      )}
+                    items={[
+                    {
+                        key: '/books',
+                        icon: <ReadOutlined />,
+                        label: 'Libros',
+                        onclick: setview('/books'),
+                    },
+                    {
+                        key: 2,
+                        icon: <UserOutlined />,
+                        label: 'Autores',
+                        onclick: setview('/authors')
+                    }
+                ]}
+
+                    //   items={[ReadOutlined, UserOutlined].map(
+                    //     (icon, index) => ({
+                    //       key: String(index + 1),
+                    //       icon: React.createElement(icon),
+                    //       label: ` ${index + 1}`,
+                    //       onClick: (() => )
+                    //     }),
+                    //   )}
                 />
             </Sider>
             <Layout>
@@ -55,10 +76,7 @@ const LayoutMain = () => {
                             background: colorBgContainer,
                         }}
                     >
-                        <Divider>
-                            <h1>Ingresar un nuevo libro</h1>
-                        </Divider>
-                        <App />
+
                     </div>
                 </Content>
                 <Footer

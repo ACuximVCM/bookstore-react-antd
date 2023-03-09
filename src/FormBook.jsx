@@ -7,13 +7,14 @@ import { AntInput } from './components/antd/AntInput';
 import { AntSelect } from './components/antd/AntSelect';
 import { AntDatePicker } from './components/antd/AntDatePicker';
 import { AntTextarea } from './components/antd/AntTextarea';
-import ValidationSchema from './schema/ValidationSchema';
+import ValidationBook from './schema/ValidationBook';
 import { DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const App = () => {
+const FormBook = () => {
   const [authorsList, setAuthorsList] = useState([]);
   const [booksList, setBooksList] = useState([]);
+  
   const ColumnsForm = [
     {
       title: "Nombre",
@@ -114,7 +115,8 @@ const App = () => {
         style={{ width: '100%' }}
 
         //validacion con Yup
-        validationSchema={ValidationSchema}
+        validationSchema={ValidationBook}
+
         onSubmit={async (values, { resetForm }) => {
           console.log(values);
           let payload = {
@@ -282,5 +284,5 @@ const App = () => {
   )
 }
 
-export default App;
+export default FormBook;
 
